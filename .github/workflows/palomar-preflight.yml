@@ -11,13 +11,26 @@ on:
 permissions:
   contents: read
 jobs:
+  # The registry's contract wants a request id of exactly twelve lowercase alphanumerics
+  # (SUBMISSION_ID_RE in its submission_contract.py); the commit's first twelve hex characters
+  # are that, and the same commit always gets the same id. Computed here because a reusable
+  # workflow's inputs are expressions and cannot slice a string. (opn-erdos-1050)
+  request:
+    runs-on: ubuntu-24.04
+    outputs:
+      request_id: ${{ steps.id.outputs.request_id }}
+    steps:
+      - id: id
+        run: echo "request_id=${GITHUB_SHA:0:12}" >> "$GITHUB_OUTPUT"
   preflight:
+    needs: request
     uses: PalomarRegistry/PalomarSubmission/.github/workflows/submission.yml@d4e41c1d5b0d114c4859e6e5831dc6d3ad1d0d44
     with:
       repository: ${{ github.repository }}
       commit: ${{ github.sha }}
       pipeline_commit: "d4e41c1d5b0d114c4859e6e5831dc6d3ad1d0d44"
-      request_id: "opn-erdos-1050-${{ github.run_id }}"
+      request_id: ${{ needs.request.outputs.request_id }}
       mode: full
       execution_profile: palomar-standard-v1
-      options: '{"comparator_config_path": "comparator.json", "authorization_relationship": "maintainer"}'
+      # the relationship is the contract's own sentence; its short code ("maintainer") is refused
+      options: '{"comparator_config_path": "comparator.json", "authorization_relationship": "I am a responsible author or maintainer"}'
