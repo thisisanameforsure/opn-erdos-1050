@@ -1,0 +1,23 @@
+# Palomar's own mechanical preflight (F25-R12): the registry's reusable workflow run on this
+# wrapper, mode full, pinned to the PalomarSubmission commit the network observed
+# (2026-10-11). "A local build or standalone Comparator run does not count" — the
+# registry's protocol — so this is the definition of a port's completion. Advisory: a later run
+# at submission can still differ. Needs no secret; contents: read only.
+name: palomar-preflight
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    uses: PalomarRegistry/PalomarSubmission/.github/workflows/submission.yml@d4e41c1d5b0d114c4859e6e5831dc6d3ad1d0d44
+    with:
+      repository: ${{ github.repository }}
+      commit: ${{ github.sha }}
+      pipeline_commit: "d4e41c1d5b0d114c4859e6e5831dc6d3ad1d0d44"
+      request_id: "opn-erdos-1050-${{ github.run_id }}"
+      mode: full
+      execution_profile: palomar-standard-v1
+      options: '{"comparator_config_path": "comparator.json", "authorization_relationship": "maintainer"}'
